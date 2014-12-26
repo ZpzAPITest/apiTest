@@ -84,10 +84,8 @@
                                     if(![posts[0][@"d"][@"data"] isKindOfClass:[NSDictionary class]]){
                                         [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"返回数据类型为%@,应该为%@",[posts[0][@"d"][@"data"] class],[NSDictionary class]]]];
                                         [self hasRegistrField:posts[0][@"d"][@"data"][0]];
-                                        [self gotoLogin];
                                     }else{
                                         [self hasRegistrField:posts[0][@"d"][@"data"]];
-                                        [self gotoLogin];
                                     }
                                 }else{
                                     [self.scrollView addSubview:[self getLabel:@"缺少key====> data"]];
@@ -109,6 +107,7 @@
             [self.scrollView addSubview:[self getLabel:@"注册接口请求失败"]];
             [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"%@",error]]];
         }
+        [self gotoLogin];
     } dic:dic];
 }
 
@@ -150,11 +149,9 @@
                                     if(![posts[0][@"d"][@"data"] isKindOfClass:[NSDictionary class]]){
                                         [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"返回数据类型为%@,应该为%@",[posts[0][@"d"][@"data"] class],[NSDictionary class]]]];
                                         [self hasLoginField:posts[0][@"d"][@"data"][0]];
-                                        [self InformationImproved];
                                     }else{
                                         [self hasLoginField:posts[0][@"d"][@"data"]];
                                         [self.scrollView addSubview:[self getLabel:@"登录成功!"]];
-                                        [self InformationImproved];
                                     }
                                 }else{
                                     [self.scrollView addSubview:[self getLabel:@"缺少key====> data"]];
@@ -176,6 +173,7 @@
             [self.scrollView addSubview:[self getLabel:@"登录接口请求失败"]];
             [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"%@",error]]];
         }
+        [self InformationImproved];
     } dic:dic];
 }
 
@@ -229,10 +227,64 @@
             [self.scrollView addSubview:[self getLabel:@"登录接口请求失败"]];
             [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"%@",error]]];
         }
+        [self GetUserInformation];
     } dic:dic];
 }
 
 //获取用户信息
+-(void)GetUserInformation{
+    [self.scrollView addSubview:[self getLabel:@"获取用户信息"]];
+    [LoginApi GetUserInformationWithBlock:^(NSMutableArray *posts, NSError *error) {
+        if(!error){
+            [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"返回值：%@",posts[0]]]];
+            if(posts[0][@"d"]){
+                if(posts[0][@"d"][@"status"]){
+                    if(posts[0][@"d"][@"status"][@"statusCode"]){
+                        NSNumber *errorcode = posts[0][@"d"][@"status"][@"statusCode"];
+                        switch ([errorcode intValue]) {
+                            case 1303:
+                                [self.scrollView addSubview:[self getLabel:@"获取失败，系统异常"]];
+                                break;
+                            case 1300:
+                                [self.scrollView addSubview:[self getLabel:@"获取成功"]];
+                                if(posts[0][@"d"][@"data"]){
+                                    if(posts[0][@"d"][@"data"][@"baseInformation"]){
+                                        if(![posts[0][@"d"][@"data"][@"baseInformation"] isKindOfClass:[NSDictionary class]]){
+                                            [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"返回数据类型为%@,应该为%@",[posts[0][@"d"][@"data"][@"baseInformation"] class],[NSDictionary class]]]];
+                                        }else{
+                                            
+                                        }
+                                    }else{
+                                        [self.scrollView addSubview:[self getLabel:@"缺少key====> baseInformation"]];
+                                    }
+                                    
+                                    if(posts[0][@"d"][@"data"][@"userProjects"]){
+                                    
+                                    }else{
+                                        [self.scrollView addSubview:[self getLabel:@"缺少key====> userProjects"]];
+                                    }
+                                }else{
+                                    [self.scrollView addSubview:[self getLabel:@"缺少key====> data"]];
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }else{
+                        [self.scrollView addSubview:[self getLabel:@"缺少key====> statusCode"]];
+                    }
+                }else{
+                    [self.scrollView addSubview:[self getLabel:@"缺少key====> status"]];
+                }
+            }else{
+                [self.scrollView addSubview:[self getLabel:@"缺少key====> d"]];
+            }
+        }else{
+            [self.scrollView addSubview:[self getLabel:@"登录接口请求失败"]];
+            [self.scrollView addSubview:[self getLabel:[NSString stringWithFormat:@"%@",error]]];
+        }
+    } userId:self.login.userId];
+}
 
 //判断注册字段
 -(void)hasRegistrField:(NSMutableDictionary *)dic{
@@ -269,6 +321,37 @@
 -(void)hasLoginField:(NSMutableDictionary *)dic{
     if(![dic.allKeys containsObject:@"userId"]){
         [self.scrollView addSubview:[self getLabel:@"缺少字段====> userId"]];
+    }else{
+        self.login.userId = dic[@"userId"];
+    }
+    
+    if(![dic.allKeys containsObject:@"userName"]){
+        [self.scrollView addSubview:[self getLabel:@"缺少字段====> userName"]];
+    }
+    
+    if(![dic.allKeys containsObject:@"userToken"]){
+        [self.scrollView addSubview:[self getLabel:@"缺少字段====> userToken"]];
+    }
+    
+    if(![dic.allKeys containsObject:@"deviceToken"]){
+        [self.scrollView addSubview:[self getLabel:@"缺少字段====> deviceToken"]];
+    }else{
+        self.login.token = dic[@"deviceToken"];
+    }
+    
+    if(![dic.allKeys containsObject:@"userType"]){
+        [self.scrollView addSubview:[self getLabel:@"缺少字段====> userType"]];
+    }
+    
+    if(![dic.allKeys containsObject:@"hasCompany"]){
+        [self.scrollView addSubview:[self getLabel:@"缺少字段====> hasCompany"]];
+    }
+}
+
+//判断用户信息字段
+-(void)hasUserInformationField:(NSMutableDictionary *)dic{
+    if(![dic.allKeys containsObject:@"userName"]){
+        [self.scrollView addSubview:[self getLabel:@"缺少字段====> userName"]];
     }else{
         self.login.userId = dic[@"userId"];
     }
